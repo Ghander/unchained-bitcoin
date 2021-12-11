@@ -279,7 +279,7 @@ export function convertExtendedPublicKey(extendedPublicKey: string, targetPrefix
       extendedPublicKeyNoPrefix,
     ]);
     return bs58check.encode(extendedPublicKeyNewPrefix);
-  } catch (err: any) {
+  } catch (err) {
     throw new Error("Unable to convert extended public key: " + err.message);
   }
 }
