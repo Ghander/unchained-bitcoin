@@ -1,4 +1,5 @@
 import {encoding} from 'bufio';
+import { FeeOptions } from './fees';
 
 /**
  * This module provides functions and constants for the P2WSH address type.
@@ -22,7 +23,7 @@ export const P2WSH = "P2WSH";
  * prevhash (32 bytes) + prevIndex (4) + scriptsig (1) + sequence bytes (4)
  * @returns {Number} 41 (always 41 for segwit inputs since script sig is in witness)
  */
-function txinSize() {
+function txinSize(): number {
   const PREVHASH_BYTES = 32;
   const PREV_INDEX_BYTES = 4;
   const SCRIPT_LENGTH_BYTES = 1
@@ -44,7 +45,7 @@ function txinSize() {
  * largest possible standard
  * @returns {Number} size of tx output (default: 43)
  */
-function txoutSize(scriptPubkeySize = 34) {
+function txoutSize(scriptPubkeySize: number = 34): number {
   // per_output: value (8) + script length (1) + 
   const VAL_BYTES = 8;
   const scriptLengthBytes = encoding.sizeVarint(scriptPubkeySize);
@@ -61,7 +62,7 @@ function txoutSize(scriptPubkeySize = 34) {
  * @param {Number} n - value of n in m-of-n for multisig script
  * @returns {Number} 3 + 34 * N
  */
-export function getRedeemScriptSize(n) {
+export function getRedeemScriptSize(n: number): number {
   const OP_M_BYTES = 1;
   const OP_N_BYTES = 1;
   const opDataBytes = n; // 1 byte per pubkey in redeem script
@@ -79,7 +80,7 @@ export function getRedeemScriptSize(n) {
  * @param {Number} n - value of n in m-of-n for multisig script
  * @returns {Number} 6 + (74 * M) + (34 * N)
  */
-export function getWitnessSize(m, n) {
+export function getWitnessSize(m: number, n: number): number {
   const OP_NULL_BYTES = 1; // needs to be added b/c of bug in multisig implementation
   const opDataBytes = m;
   // assumes largest possible signature size which could be 71, 72, or 73
@@ -105,7 +106,7 @@ export function getWitnessSize(m, n) {
  * @param {*} outputsCount - number of outputs in the tx
  * @returns {Number} number of bytes in the tx without witness fields
  */
-export function calculateBase(inputsCount, outputsCount) {
+export function calculateBase(inputsCount: number, outputsCount: number): number {
   let total = 0;
   total += 4; // version
   total += 4 // locktime
@@ -117,7 +118,8 @@ export function calculateBase(inputsCount, outputsCount) {
   return total
 }
 
-export function calculateTotalWitnessSize({ numInputs, m, n }) {
+export function calculateTotalWitnessSize(config: FeeOptions) {
+  const { numInputs, m, n } = config;
   let total = 0;
 
   total += 1; // segwit marker
@@ -140,7 +142,7 @@ export function calculateTotalWitnessSize({ numInputs, m, n }) {
  * @param {Number} witnessSize - size of witness fields
  * @returns {Number} virtual size of tx
  */
-function calculateVSize(baseSize, witnessSize) {
+function calculateVSize(baseSize: number, witnessSize: number): number {
   const WITNESS_SCALE_FACTOR = 4;
   const totalSize = baseSize + witnessSize;
   const txWeight = baseSize * 3 + totalSize;
@@ -150,14 +152,14 @@ function calculateVSize(baseSize, witnessSize) {
 /**
  * Estimate the transaction virtual size (vsize) when spending inputs
  * from the same multisig P2WSH address. 
- * @param {Object} config - configuration for the calculation
+ * @param {FeeOptions} config - configuration for the calculation
  * @param {number} config.numInputs - number of m-of-n multisig P2SH inputs
  * @param {number} config.numOutputs - number of outputs
  * @param {number} config.m - required signers
  * @param {number} config.n - total signers
  * @returns {number} estimated transaction virtual size in bytes
  */
-export function estimateMultisigP2WSHTransactionVSize(config) {
+export function estimateMultisigP2WSHTransactionVSize(config: FeeOptions): number {
   // non-segwit discount fields
   const baseSize = calculateBase(config.numInputs, config.numOutputs);
   // these are the values that benefit from the segwit discount

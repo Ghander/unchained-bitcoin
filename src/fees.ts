@@ -29,7 +29,7 @@ import {ZERO} from "./utils";
  * @default 1000 Satoshis/vbyte
  * 
  */
-const MAX_FEE_RATE_SATS_PER_VBYTE = BigNumber(1000);   // 1000 Sats/vbyte
+const MAX_FEE_RATE_SATS_PER_VBYTE = new BigNumber(1000);   // 1000 Sats/vbyte
 
 /**
  * Maxmium acceptable transaction fee in Satoshis.
@@ -38,7 +38,7 @@ const MAX_FEE_RATE_SATS_PER_VBYTE = BigNumber(1000);   // 1000 Sats/vbyte
  * @type {BigNumber}
  * @default 2500000 Satoshis (=0.025 BTC)
  */
-const MAX_FEE_SATS = BigNumber(2500000); // ~ 0.025 BTC ~ $250 if 1 BTC = $10k
+const MAX_FEE_SATS = new BigNumber(2500000); // ~ 0.025 BTC ~ $250 if 1 BTC = $10k
 
 /**
  * Validate the given transaction fee rate (in Satoshis/vbyte).
@@ -58,10 +58,20 @@ const MAX_FEE_SATS = BigNumber(2500000); // ~ 0.025 BTC ~ $250 if 1 BTC = $10k
  * console.log(validateFeeRate(10000)); // "Fee rate is too high."
  * console.log(validateFeeRate(250)); // ""
  */
-export function validateFeeRate(feeRateSatsPerVbyte) {
+ export interface FeeOptions {
+     addressType: string;
+     numInputs: number;
+     numOutputs: number; 
+     m: number;
+     n: number;
+     feesPerByteInSatoshis: string;
+     feesInSatoshis: string;
+}
+
+export function validateFeeRate(feeRateSatsPerVbyte: string|number|BigNumber) {
   let fr;
   try {
-    fr = BigNumber(feeRateSatsPerVbyte);
+    fr = new BigNumber(feeRateSatsPerVbyte);
   } catch(e) {
     return "Invalid fee rate.";
   }
@@ -98,10 +108,10 @@ export function validateFeeRate(feeRateSatsPerVbyte) {
  * console.log(validateFee(-30000)) // "Fee cannot be negative."
  * console.log(validateFee(30000, 10000000)) // ""
  */
-export function validateFee(feeSats, inputsTotalSats) {
+export function validateFee(feeSats: string|number|BigNumber, inputsTotalSats: string|number|BigNumber) {
   let fs, its;
   try {
-    fs = BigNumber(feeSats);
+    fs = new BigNumber(feeSats);
   } catch(e) {
     return "Invalid fee.";
   }
@@ -109,7 +119,7 @@ export function validateFee(feeSats, inputsTotalSats) {
     return "Invalid fee.";
   }
   try {
-    its = BigNumber(inputsTotalSats);
+    its = new BigNumber(inputsTotalSats);
   } catch(e) {
     return "Invalid total input amount.";
   }
@@ -135,7 +145,7 @@ export function validateFee(feeSats, inputsTotalSats) {
 /**
  * Estimate transaction fee rate based on actual fee and address type, number of inputs and number of outputs.
  * 
- * @param {Object} config - configuration for the calculation
+ * @param {FeeOptions} config - configuration for the calculation
  * @param {module:multisig.MULTISIG_ADDRESS_TYPES} config.addressType - address type used for estimation
  * @param {number} config.numInputs - number of inputs used in calculation
  * @param {number} config.numOutputs - number of outputs used in calculation
@@ -155,17 +165,17 @@ export function validateFee(feeSats, inputsTotalSats) {
  * });
  * 
  * 
- * @returns {string} estimated fee rate
+ * @returns {BigNumber} estimated fee rate
  */
-export function estimateMultisigTransactionFeeRate(config) {
-  return (BigNumber(config.feesInSatoshis)).dividedBy(
+export function estimateMultisigTransactionFeeRate(config: FeeOptions): BigNumber {
+  return (new BigNumber(config.feesInSatoshis)).dividedBy(
     estimateMultisigTransactionVSize(config)
   );
 }
 
 /**
  * Estimate transaction fee based on fee rate, address type, number of inputs and outputs.
- * @param {Object} config - configuration for the calculation
+ * @param {FeeOptions} config - configuration for the calculation
  * @param {module:multisig.MULTISIG_ADDRESS_TYPES} config.addressType - address type used for estimation
  * @param {number} config.numInputs - number of inputs used in calculation
  * @param {number} config.numOutputs - number of outputs used in calculation
@@ -183,14 +193,14 @@ export function estimateMultisigTransactionFeeRate(config) {
  *   n: 3,
  *   feesPerByteInSatoshis: 10
  * });
- * @returns {number} estimated transaction fee
+ * @returns {BigNumber} estimated transaction fee
  */
-export function estimateMultisigTransactionFee(config) {
-  return (BigNumber(config.feesPerByteInSatoshis)).multipliedBy(
+export function estimateMultisigTransactionFee(config: FeeOptions): BigNumber {
+  return (new BigNumber(config.feesPerByteInSatoshis)).multipliedBy(
     estimateMultisigTransactionVSize(config));
 }
 
-function estimateMultisigTransactionVSize(config) {
+function estimateMultisigTransactionVSize(config: FeeOptions): number {
   switch (config.addressType) {
   case P2SH:
     return estimateMultisigP2SHTransactionVSize(config);
@@ -199,6 +209,6 @@ function estimateMultisigTransactionVSize(config) {
   case P2WSH:
     return estimateMultisigP2WSHTransactionVSize(config);
   default:
-    return null;
+    return NaN;
   }
 }

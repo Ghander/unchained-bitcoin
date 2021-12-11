@@ -1,4 +1,5 @@
 import BigNumber from 'bignumber.js';
+import { FeeOptions } from '.';
 
 import {
   validateFeeRate, 
@@ -16,7 +17,7 @@ describe("fees", () => {
 
     it("should return an error message for an unparseable fee rate", () => {
       BigNumber.DEBUG = true;
-      expect(validateFeeRate(null)).toMatch(/invalid fee rate/i);
+      expect(validateFeeRate(NaN)).toMatch(/invalid fee rate/i);
       BigNumber.DEBUG = false;
     });
 
@@ -47,13 +48,13 @@ describe("fees", () => {
       // If BigNumber.DEBUG is set true then an error will be thrown if this BigNumber constructor receives an invalid value
       // see https://mikemcl.github.io/bignumber.js/#debug
       BigNumber.DEBUG = true;
-      expect(validateFee(null, 1000000)).toMatch(/invalid fee/i);
+      expect(validateFee(NaN, 1000000)).toMatch(/invalid fee/i);
       BigNumber.DEBUG = false;
     });
 
     it("should return an error message for an unparseable inputTotalSats", () => {
       BigNumber.DEBUG = true;
-      expect(validateFee(10000, null)).toMatch(/invalid total input amount/i);
+      expect(validateFee(10000, NaN)).toMatch(/invalid total input amount/i);
       BigNumber.DEBUG = false;
     });
 
@@ -97,17 +98,22 @@ describe("fees", () => {
 
   describe("estimating multisig transaction fees and fee rates", () => {
 
-    it("should estimate null for bad addressType", () => {
-      const params = {
+    it("should estimate NaN for bad addressType", () => {
+      const params: FeeOptions = {
         addressType: 'foo',
         feesPerByteInSatoshis: "10",
+        numInputs: 0,
+        numOutputs: 0,
+        m: 0,
+        n: 0,
+        feesInSatoshis: ''
       };
       const fee = estimateMultisigTransactionFee(params);
-      expect(isNaN(fee)).toBe(true);
+      expect(fee.isNaN()).toBe(true);
     });
 
     it("should estimate for P2SH transactions", () => {
-      const params = {
+      const params: FeeOptions = {
         addressType: P2SH,
         numInputs: 2,
         numOutputs: 3,
@@ -118,8 +124,8 @@ describe("fees", () => {
       };
       const fee = estimateMultisigTransactionFee(params);
       const feeRate = estimateMultisigTransactionFeeRate(params);
-      expect(fee).toEqual(BigNumber(params.feesInSatoshis));
-      expect(feeRate).toEqual(BigNumber(params.feesPerByteInSatoshis));
+      expect(fee).toEqual(new BigNumber(params.feesInSatoshis));
+      expect(feeRate).toEqual(new BigNumber(params.feesPerByteInSatoshis));
     });
 
     it("should estimate for P2SH-P2WSH transactions", () => {
@@ -134,8 +140,8 @@ describe("fees", () => {
       };
       const fee = estimateMultisigTransactionFee(params);
       const feeRate = estimateMultisigTransactionFeeRate(params);
-      expect(fee).toEqual(BigNumber(params.feesInSatoshis));
-      expect(feeRate).toEqual(BigNumber(params.feesPerByteInSatoshis));
+      expect(fee).toEqual(new BigNumber(params.feesInSatoshis));
+      expect(feeRate).toEqual(new BigNumber(params.feesPerByteInSatoshis));
     });
 
     it("should estimate for P2WSH transactions", () => {
@@ -152,8 +158,8 @@ describe("fees", () => {
       };
       const fee = estimateMultisigTransactionFee(params);
       const feeRate = estimateMultisigTransactionFeeRate(params);
-      expect(fee).toEqual(BigNumber(params.feesInSatoshis));
-      expect(feeRate).toEqual(BigNumber(params.feesPerByteInSatoshis));
+      expect(fee).toEqual(new BigNumber(params.feesInSatoshis));
+      expect(feeRate).toEqual(new BigNumber(params.feesPerByteInSatoshis));
     });
 
   });
