@@ -29,7 +29,7 @@ const BECH32_ADDRESS_BODY_PATTERN = "[ac-hj-np-z02-9]+$";
  * console.log(validateAddress('2Mx6Y8VRj8rmSdLfwrvnpBR7ctjctPLzpWs', TESTNET)); // ""
  * 
  */
-export function validateAddress(address, network) {
+export function validateAddress(address: string, network: string) {
   if ((! address) || address.trim() === '') {
     return 'Address cannot be blank.';
   }

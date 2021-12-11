@@ -1,6 +1,7 @@
 import { validateAddress } from './addresses';
-import { P2SH, P2WSH, } from './multisig';
 import { NETWORKS } from './networks';
+import { P2WSH, } from './p2wsh';
+import { P2SH } from './p2sh';
 
 const P2PKH = "P2PKH";
 

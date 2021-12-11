@@ -1,3 +1,4 @@
+
 /* eslint-disable accessor-pairs */
 /**
  * This module provides functions for validating & deriving public
@@ -278,7 +279,7 @@ export function convertExtendedPublicKey(extendedPublicKey: string, targetPrefix
       extendedPublicKeyNoPrefix,
     ]);
     return bs58check.encode(extendedPublicKeyNewPrefix);
-  } catch (err) {
+  } catch (err: any) {
     throw new Error("Unable to convert extended public key: " + err.message);
   }
 }

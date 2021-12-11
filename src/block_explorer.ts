@@ -8,6 +8,7 @@
  * @module block_explorer
  */
 
+import { NETWORKS } from ".";
 import {TESTNET} from "./networks";
 
 const BASE_URL_MAINNET = 'https://blockstream.info';
@@ -29,7 +30,7 @@ function blockExplorerBaseURL(network) {
  * console.log(blockExplorerURL(path, MAINNET)) // https://blockstream.info/block/00000000000000000011341d69792271766e4683e29b3ea169eacc59bde10a57
  * console.log(blockExplorerURL(path, TESTNET)) // https://blockstream.info/block/testnet/00000000000000000011341d69792271766e4683e29b3ea169eacc59bde10a57
  */
-export function blockExplorerURL(path, network) {
+export function blockExplorerURL(path: string, network: NETWORKS) {
   return `${blockExplorerBaseURL(network)}${path}`;
 }
 
@@ -45,7 +46,7 @@ export function blockExplorerURL(path, network) {
  * console.log(blockExplorerAPIURL(path, MAINNET)); // https://blockstream.info/api/tx/1814a10fb22e9551a17a94a1e68971e19b4f59eaf1689e0af85b97929b3b9ae0
  * console.log(blockExplorerAPIURL(path, TESTNET)); // https://blockstream.info/testnet/api/tx/1814a10fb22e9551a17a94a1e68971e19b4f59eaf1689e0af85b97929b3b9ae0
  */
-export function blockExplorerAPIURL(path, network) {
+export function blockExplorerAPIURL(path: string, network: NETWORKS) {
   return `${blockExplorerBaseURL(network)}/api${path}`;
 }
 
@@ -61,7 +62,7 @@ export function blockExplorerAPIURL(path, network) {
  * console.log(blockExplorerTransactionURL(txid, MAINNET)); // https://blockstream.info/tx/1814a10fb22e9551a17a94a1e68971e19b4f59eaf1689e0af85b97929b3b9ae0
  * console.log(blockExplorerTransactionURL(txid, TESTNET)); // https://blockstream.info/testnet/tx/1814a10fb22e9551a17a94a1e68971e19b4f59eaf1689e0af85b97929b3b9ae0
  */
-export function blockExplorerTransactionURL(txid, network) {
+export function blockExplorerTransactionURL(txid: string, network: NETWORKS) {
   return blockExplorerURL(`/tx/${txid}`, network);
 }
 
@@ -77,6 +78,6 @@ export function blockExplorerTransactionURL(txid, network) {
  * console.log(blockExplorerAddressURL(address, MAINNET)); // https://blockstream.info/address/39YqNoLULDpbjmeCTdGJ42DQhrQLzRcMdX
  * console.log(blockExplorerAddressURL(address, TESTNET)); // https://blockstream.info/testnet/address/39YqNoLULDpbjmeCTdGJ42DQhrQLzRcMdX
  */
-export function blockExplorerAddressURL(address, network) {
+export function blockExplorerAddressURL(address: string, network: NETWORKS) {
   return blockExplorerURL(`/address/${address}`, network);
 }

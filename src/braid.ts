@@ -23,6 +23,7 @@ import {
   deriveChildPublicKey,
   extendedPublicKeyRootFingerprint,
 } from './keys';
+import { ExtendedPublicKey } from ".";
 
 // In building the information objects that PSBTs want, one must include information
 // about the root fingerprint for the device. If that information is unknown, just fill
@@ -38,8 +39,23 @@ const FAKE_ROOT_FINGERPRINT = '00000000';
  * @param {number} options.requiredSigners - how many required signers in this braid
  * @param {string} options.index - One value, relative, to add on to all xpub absolute bip32paths (usually 0=deposit, 1=change)
  */
+export interface BraidOptions {
+  network: string;
+  addressType: string;
+  extendedPublicKeys: ExtendedPublicKey[] | string[];
+  requiredSigners: number;
+  index: string;
+}
+
 export class Braid extends Struct {
-  constructor(options) {
+  public addressType?: string;
+  public network!: string;
+  extendedPublicKeys!: ExtendedPublicKey[] | string[];
+  requiredSigners!: number;
+  index!: string;
+  sequence!: number[];
+  
+  constructor(options: BraidOptions) {
     super();
     if (!options || !Object.keys(options).length) {
       return this;
@@ -90,7 +106,7 @@ export class Braid extends Struct {
  * @param {Braid} braid A Braid struct to be 'exported'
  * @returns {string} string of JSON data which can used to reconstitute the Braid later
  */
-export function braidConfig(braid) {
+export function braidConfig(braid: Braid) {
   return JSON.stringify({
     network: braid.network,
     addressType: braid.addressType,
@@ -105,7 +121,7 @@ export function braidConfig(braid) {
  * @param {Braid} braid the braid to interrogate
  * @returns {string} network string testnet/mainnet
  */
-export function braidNetwork(braid) {
+export function braidNetwork(braid: Braid) {
   return braid.network;
 }
 
@@ -114,7 +130,7 @@ export function braidNetwork(braid) {
  * @param {Braid} braid the braid to interrogate
  * @returns {string} address type p2sh/p2sh-p2wsh/p2wsh
  */
-export function braidAddressType(braid) {
+export function braidAddressType(braid: Braid) {
   return braid.addressType;
 }
 
@@ -123,7 +139,7 @@ export function braidAddressType(braid) {
  * @param {Braid} braid the braid to interrogate
  * @returns {ExtendedPublicKey[]} array of ExtendedPublicKeys in the braid
  */
-export function braidExtendedPublicKeys(braid) {
+export function braidExtendedPublicKeys(braid: Braid) {
   return braid.extendedPublicKeys;
 }
 
@@ -132,7 +148,7 @@ export function braidExtendedPublicKeys(braid) {
  * @param {Braid} braid the braid to interrogate
  * @returns {number} number of required signers
  */
-export function braidRequiredSigners(braid) {
+export function braidRequiredSigners(braid: Braid) {
   return braid.requiredSigners;
 }
 
@@ -141,7 +157,7 @@ export function braidRequiredSigners(braid) {
  * @param {Braid} braid the braid to interrogate
  * @returns {string} index (singular) for the braid: 0 = deposit, 1 = change
  */
-export function braidIndex(braid) {
+export function braidIndex(braid: Braid) {
   return braid.index;
 }
 
@@ -153,7 +169,7 @@ export function braidIndex(braid) {
  * @param {string} path the path to validate
  * @returns {void} the assertions will fire errors if invalid
  */
-export function validateBip32PathForBraid(braid, path) {
+export function validateBip32PathForBraid(braid: Braid, path: string) {
   const pathError = validateBIP32Path(path);
   assert(!pathError.length, pathError);
 
@@ -175,7 +191,7 @@ export function validateBip32PathForBraid(braid, path) {
  * @param {string} path what suffix to generate pubkeys at
  * @returns {Object} Object where the keys make up an array of public keys at a particular path and the values are the bip32Derivations (used in other places)
  */
-function derivePublicKeyObjectsAtPath(braid, path) {
+function derivePublicKeyObjectsAtPath(braid: Braid, path: string) {
   validateBip32PathForBraid(braid, path);
   const dataRichPubKeyObjects = {};
   const actualPathSuffix = path.startsWith('m/') ? path.slice(2) : path;
@@ -211,7 +227,7 @@ function derivePublicKeyObjectsAtPath(braid, path) {
  * @param {string} path the suffix to generate pubkeys at
  * @returns {string[]} array of sorted (BIP67) public keys at a particular index from the braid
  */
-export function generatePublicKeysAtPath(braid, path) {
+export function generatePublicKeysAtPath(braid: Braid, path) {
   return Object.keys(derivePublicKeyObjectsAtPath(braid, path)).sort(); // BIP67
 }
 
@@ -222,7 +238,7 @@ export function generatePublicKeysAtPath(braid, path) {
  * @param {number} index the suffix to generate pubkeys at
  * @returns {string[]} array of public keys at a particular index from the braid
  */
-export function generatePublicKeysAtIndex(braid, index) {
+export function generatePublicKeysAtIndex(braid: Braid, index) {
   let pathToDerive = braidIndex(braid);
   pathToDerive += "/" + index.toString();
   return generatePublicKeysAtPath(braid, pathToDerive);
@@ -234,7 +250,7 @@ export function generatePublicKeysAtIndex(braid, index) {
  * @param {string} path what suffix to generate bip32PathDerivation at
  * @returns {Object[]} array of getBip32Derivation objects
  */
-export function generateBip32DerivationByPath(braid, path) {
+export function generateBip32DerivationByPath(braid: Braid, path) {
   return Object.values(derivePublicKeyObjectsAtPath(braid, path));
 }
 
@@ -244,7 +260,7 @@ export function generateBip32DerivationByPath(braid, path) {
  * @param {number} index what suffix to generate bip32PathDerivation at
  * @returns {Object[]} array of getBip32Derivation objects
  */
-export function generateBip32DerivationByIndex(braid, index) {
+export function generateBip32DerivationByIndex(braid: Braid, index) {
   let pathToDerive = braidIndex(braid); // deposit or change
   pathToDerive += "/" + index.toString();
   return generateBip32DerivationByPath(braid, pathToDerive);
@@ -256,7 +272,7 @@ export function generateBip32DerivationByIndex(braid, index) {
  * @param {string} path what suffix to generate the multisig at
  * @returns {module:multisig.Multisig} braid-aware MULTISIG object at path
  */
-export function deriveMultisigByPath(braid, path) {
+export function deriveMultisigByPath(braid: Braid, path) {
   const pubkeys = generatePublicKeysAtPath(braid, path);
   const bip32Derivation = generateBip32DerivationByPath(braid, path);
   return generateBraidAwareMultisigFromPublicKeys(braid, pubkeys, bip32Derivation);
@@ -268,7 +284,7 @@ export function deriveMultisigByPath(braid, path) {
  * @param {number} index what suffix to generate the multisig at
  * @returns {module:multisig.Multisig} braid-aware MULTISIG object at index
  */
-export function deriveMultisigByIndex(braid, index) {
+export function deriveMultisigByIndex(braid: Braid, index: number) {
   let pathToDerive = braidIndex(braid);
   pathToDerive += "/" + index.toString();
   return deriveMultisigByPath(braid, pathToDerive);
@@ -283,9 +299,9 @@ export function deriveMultisigByIndex(braid, index) {
  * @returns {module:multisig.Multisig} braid-aware MULTISIG object
  */
 function generateBraidAwareMultisigFromPublicKeys(
-  braid,
-  pubkeys,
-  bip32Derivation) {
+  braid: Braid,
+  pubkeys: string[],
+  bip32Derivation): any {
   const multisig = generateMultisigFromPublicKeys(
     braidNetwork(braid),
     braidAddressType(braid),
@@ -307,11 +323,11 @@ function generateBraidAwareMultisigFromPublicKeys(
  * @returns {Braid} Braid struct is returned
  */
 export function generateBraid(
-  network,
-  addressType,
-  extendedPublicKeys,
-  requiredSigners,
-  index,
+  network: string,
+  addressType: string,
+  extendedPublicKeys: ExtendedPublicKey[],
+  requiredSigners: number,
+  index: string,
 ) {
   return new Braid({
     network,
