@@ -50,10 +50,10 @@ export interface BraidOptions {
 export class Braid extends Struct {
   public addressType?: string;
   public network!: string;
-  extendedPublicKeys!: ExtendedPublicKey[] | string[];
-  requiredSigners!: number;
-  index!: string;
-  sequence!: number[];
+  public extendedPublicKeys!: ExtendedPublicKey[] | string[];
+  public requiredSigners!: number;
+  public index!: string;
+  public sequence!: number[];
   
   constructor(options: BraidOptions) {
     super();

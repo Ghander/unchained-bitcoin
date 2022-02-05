@@ -9,34 +9,18 @@ import {networks} from "bitcoinjs-lib";
  */
 
 /**
- * Constant corresponding to the Bitcoin mainnet.
- * 
- * @constant
- * @type {string}
- * @default mainnet
- * 
- */
-export const MAINNET = "mainnet";
-
-/**
- * Constant corresponding to the current Bitcoin testnet.
- * 
- * @constant
- * @type {string}
- * @default testnet
- */
-export const TESTNET = "testnet";
-
-/**
  * Enumeration of possible values for bitcoin networks ([MAINET]{@link module:networks.MAINNET}|[TESTNET]{@link module:networks.TESTNET}).
  *
  * @constant
  * @enum {string}
  * @default
  */
-export const NETWORKS = {
-  MAINNET,
-  TESTNET,
+
+export enum NETWORKS {
+  //corresponding to the Bitcoin mainnet.
+  MAINNET = 'mainnet',
+  //corresponding to the current Bitcoin testnet.
+  TESTNET = 'testnet',
 };
 
 /**
@@ -48,7 +32,7 @@ export const NETWORKS = {
  * @param {module:networks.NETWORKS} network - bitcoin network
  * @returns {Network} bitcoinjs-lib network object
  */
-export function networkData(network) {
+export function networkData(network: NETWORKS) {
   switch (network) {
     case NETWORKS.MAINNET:
       return networks.bitcoin;
@@ -68,7 +52,7 @@ export function networkData(network) {
  * import {MAINNET} from "unchained-bitcoin";
  * console.log(networkLabel(MAINNET)); // "Mainnet"
  */
-export function networkLabel(network) {
+export function networkLabel(network: NETWORKS) : string {
   switch (network) {
     case NETWORKS.MAINNET:
       return "Mainnet";
@@ -84,17 +68,17 @@ export function networkLabel(network) {
  * @param {string} prefix - extended public key prefix (e.g. xpub, tpub)
  * @returns {string} - string indicating network
  */
-export function getNetworkFromPrefix(prefix) {
+export function getNetworkFromPrefix(prefix: string) : NETWORKS {
   switch (prefix.toLowerCase()) {
     case 'xpub':
     case 'ypub':
     case 'zpub':
-      return MAINNET;
+      return NETWORKS.MAINNET;
 
     case 'tpub':
     case 'upub':
     case 'vpub':
-      return TESTNET;
+      return NETWORKS.TESTNET;
 
     default:
       throw new Error(`Unrecognized extended public key prefix ${prefix}`)

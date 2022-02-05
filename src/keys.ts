@@ -38,7 +38,7 @@ export const EXTENDED_PUBLIC_KEY_VERSIONS = {
  * @returns {null} returns null if valid
  * @throws Error with message indicating the invalid prefix.
  */
-export function validatePrefix(prefix: KeyPrefix): never | null {
+export function validatePrefix(prefix: string): never | null {
   if (!EXTENDED_PUBLIC_KEY_VERSIONS[prefix]) {
     throw new Error(`Invalid prefix "${prefix}" for extended public key.`);
   }
@@ -74,20 +74,23 @@ export function validateRootFingerprint(rootFingerprint:string): void {
  * console.log(xpub.toBase58()) // returns base58 check encoded xpub
  */
 export class ExtendedPublicKey extends Struct {
-  path?: string;
-  sequence?: number[];
-  index?: number;
-  depth?: number;
-  chaincode?: string;
-  pubkey?: string;
-  parentFingerprint?: string;
-  network?: NETWORKS;
-  version?: KeyVersion;
-  rootFingerprint?: string;
-  base58String?: string;
+  public path: string;
+  public sequence: number[];
+  public index?: number;
+  public depth?: number;
+  public chaincode?: string;
+  public pubkey?: string;
+  public parentFingerprint?: number;
+  public network?: NETWORKS;
+  public version?: string;
+  public rootFingerprint?: string;
+  public base58String?: string;
 
   constructor(options: Partial<ExtendedPublicKey>) {
     super();
+    this.path = '';
+    this.sequence = []
+
     if (!options || !Object.keys(options).length) {
       return this;
     }
@@ -267,7 +270,7 @@ export class ExtendedPublicKey extends Struct {
  * @returns {(string|object)} converted extended public key or error object
  * with the failed key and error message
  */
-export function convertExtendedPublicKey(extendedPublicKey: string, targetPrefix: KeyPrefix): (string | object) {
+export function convertExtendedPublicKey(extendedPublicKey: string, targetPrefix: string): (string | object) {
   try {
     const sourcePrefix = extendedPublicKey.slice(0, 4);
     validatePrefix(targetPrefix);
@@ -574,7 +577,7 @@ export function extendedPublicKeyRootFingerprint(extendedPublicKey: Struct): str
  * @param {string} bip32Path e.g. m/45'/0'/0
  * @param {string} pubkey pubkey to derive from
  * @param {string} chaincode chaincode corresponding to pubkey and path
- * @param {string} parentFingerprint - fingerprint of parent public key
+ * @param {number} parentFingerprint - fingerprint of parent public key
  * @param {string} network - mainnet or testnet
  * @returns {string} base58 encoded extended public key (xpub or tpub)
  */
@@ -582,7 +585,7 @@ export function deriveExtendedPublicKey(
   bip32Path: string,
   pubkey: string,
   chaincode: string,
-  parentFingerprint: string,
+  parentFingerprint: number,
   network: string = MAINNET,
 ): string {
   const xpub = new ExtendedPublicKey({

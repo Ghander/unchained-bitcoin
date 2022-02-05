@@ -55,7 +55,8 @@ import {P2SH_P2WSH} from "./p2sh_p2wsh";
 import {P2WSH} from "./p2wsh";
 import {toHexString} from "./utils";
 
-import {payments} from "bitcoinjs-lib";
+import {Payment, payments} from "bitcoinjs-lib";
+import { NETWORKS } from ".";
 
 /**
  * Describes the return type of several functions in the
@@ -72,25 +73,34 @@ import {payments} from "bitcoinjs-lib";
  * @typedef module:multisig.Multisig
  * @type {Object}
  * @property {string} address - The multisig address
- * @property {Object} redeem - the redeem object from p2ms
+ * @property {Payment} redeem - the redeem object from p2ms
  * @property {Object} multisigBraidDetails - details about the braid (addressType, network, requiredSigners, xpubs, index)
  * @property {Object[]} getBip32Derivation - Array of objects for every key in this multisig address
  *
  */
 
+ export class Multisig {
+  braidDetails: string;
+  address: string
+  redeem: Payment
+  multisigBraidDetails: any
+  getBip32Derivation: any[]
+
+  constructor() {
+    this.braidDetails = '';
+    this.address = '';
+    this.redeem = {};
+    this.getBip32Derivation = [];
+  }
+}
 /**
  * Enumeration of possible multisig address types ([P2SH]{@link module:p2sh.P2SH}|[P2SH_P2WSH]{@link module:p2sh_p2wsh.P2SH_P2WSH}|[P2WSH]{@link module:p2wsh.P2WSH}).
  *
  * @constant
- * @enum {string}
+ * @type {string}
  * @default
  */
-export const MULTISIG_ADDRESS_TYPES = {
-  P2SH,
-  P2SH_P2WSH,
-  P2WSH,
-};
-
+export type MULTISIG_ADDRESS_TYPES = 'P2SH' | 'P2SH-P2WSH' | 'P2WSH';
 /**
  * Return an M-of-N [`Multisig`]{@link module:multisig.MULTISIG}
  * object by specifying the total number of signers (M) and the public
@@ -109,12 +119,12 @@ export const MULTISIG_ADDRESS_TYPES = {
  * const multisigP2SH = generateMultisigFromPublicKeys(MAINNET, P2SH, 2, "03a...", "03b...", "03c...");
  * const multisigP2WSH = generateMultisigFromPublicKeys(MAINNET, P2WSH, 2, "03a...", "03b...", "03c...");
  */
-export function generateMultisigFromPublicKeys(network, addressType, requiredSigners, ...publicKeys) {
+export function generateMultisigFromPublicKeys(network: NETWORKS, addressType: MULTISIG_ADDRESS_TYPES, requiredSigners: number, ...publicKeys: string[]) : Multisig | null {
   const multisig = payments.p2ms({
     m: requiredSigners,
     pubkeys: publicKeys.map((hex) => Buffer.from(hex, 'hex')),
     network: networkData(network),
-  });
+  }) as Multisig;
   return generateMultisigFromRaw(addressType, multisig);
 }
 
@@ -142,11 +152,11 @@ export function generateMultisigFromPublicKeys(network, addressType, requiredSig
  * const multisigP2SH = generateMultisigFromHex(MAINNET, P2SH, multisigScript);
  * const multisigP2WSH = generateMultisigFromHex(MAINNET, P2WSH, multisigScript);
  */
-export function generateMultisigFromHex(network, addressType, multisigScriptHex) {
+export function generateMultisigFromHex(network: NETWORKS, addressType: MULTISIG_ADDRESS_TYPES, multisigScriptHex: string) {
   const multisig = payments.p2ms({
     output: Buffer.from(multisigScriptHex, 'hex'),
     network: networkData(network),
-  });
+  }) as Multisig;
   return generateMultisigFromRaw(addressType, multisig);
 }
 
@@ -162,16 +172,16 @@ export function generateMultisigFromHex(network, addressType, multisigScriptHex)
  * @ignore
  *
  */
-export function generateMultisigFromRaw(addressType, multisig) {
+export function generateMultisigFromRaw(addressType: MULTISIG_ADDRESS_TYPES, multisig: Multisig): Multisig | null {
   switch (addressType) {
     case P2SH:
-      return payments.p2sh({redeem: multisig});
+      return payments.p2sh({redeem: multisig}) as Multisig;
     case P2SH_P2WSH:
       return payments.p2sh({
         redeem: payments.p2wsh({redeem: multisig}),
-      });
+      }) as Multisig;
     case P2WSH:
-      return payments.p2wsh({redeem: multisig});
+      return payments.p2wsh({redeem: multisig}) as Multisig;
     default:
       return null;
   }
@@ -226,8 +236,8 @@ export function multisigAddressType(multisig) {
  * const multisig = generateMultisigFromPublicKeys(MAINNET, P2SH, 2, "03a...", "03b...", "03c...");
  * console.log(multisigRequiredSigners(multisig)); // 2
  */
-export function multisigRequiredSigners(multisig) {
-  return (multisigAddressType(multisig) === P2SH_P2WSH) ? multisig.redeem.redeem.m : multisig.redeem.m;
+export function multisigRequiredSigners(multisig: Multisig) : number | undefined {
+  return (multisigAddressType(multisig) === P2SH_P2WSH) ? multisig.redeem.redeem?.m : multisig.redeem.m;
 }
 
 /**
@@ -244,8 +254,8 @@ export function multisigRequiredSigners(multisig) {
  * const multisig = generateMultisigFromPublicKeys(MAINNET, P2SH, 2, "03a...", "03b...", "03c...");
  * console.log(multisigTotalSigners(multisig)); // 3
  */
-export function multisigTotalSigners(multisig) {
-  return (multisigAddressType(multisig) === P2SH_P2WSH) ? multisig.redeem.redeem.n : multisig.redeem.n;
+export function multisigTotalSigners(multisig: Multisig) : number | undefined {
+  return (multisigAddressType(multisig) === P2SH_P2WSH) ? multisig.redeem.redeem?.n : multisig.redeem.n;
 }
 
 /**
@@ -265,7 +275,7 @@ export function multisigTotalSigners(multisig) {
  * const multisig = generateMultisigFromPublicKeys(MAINNET, P2SH, 2, "03a...", "03b...", "03c...");
  * console.log(multisigScript(multisig));
  */
-export function multisigScript(multisig) {
+export function multisigScript(multisig : Multisig) : Multisig | null {
   switch (multisigAddressType(multisig)) {
     case P2SH:
       return multisigRedeemScript(multisig);
@@ -297,12 +307,12 @@ export function multisigScript(multisig) {
  * const multisig = generateMultisigFromPublicKeys(MAINNET, P2SH, 2, "03a...", "03b...", "03c...");
  * console.log(multisigRedeemScript(multisig));
  */
-export function multisigRedeemScript(multisig) {
+export function multisigRedeemScript(multisig: Multisig) : Multisig | null {
   switch (multisigAddressType(multisig)) {
     case P2SH:
-      return multisig.redeem;
+      return multisig.redeem as Multisig;
     case P2SH_P2WSH:
-      return multisig.redeem;
+      return multisig.redeem as Multisig;
     case P2WSH:
       return null;
     default:
@@ -328,14 +338,14 @@ export function multisigRedeemScript(multisig) {
  * const multisig = generateMultisigFromPublicKeys(MAINNET, P2WSH, 2, "03a...", "03b...", "03c...");
  * console.log(multisigWitnessScript(multisig));
  */
-export function multisigWitnessScript(multisig) {
+export function multisigWitnessScript(multisig: Multisig) : Multisig | null {
   switch (multisigAddressType(multisig)) {
     case P2SH:
       return null;
     case P2SH_P2WSH:
-      return multisig.redeem.redeem;
+      return multisig.redeem.redeem as Multisig || null;
     case P2WSH:
-      return multisig.redeem;
+      return multisig.redeem as Multisig;
     default:
       /* istanbul ignore next */
       // multisigAddressType only returns one of the 3 above choices
@@ -361,7 +371,7 @@ export function multisigWitnessScript(multisig) {
  * console.log(multisigPublicKeys(multisig)); // ["03a...", "03b...", "03c..."]
  *
  */
-export function multisigPublicKeys(multisig) {
+export function multisigPublicKeys(multisig: Multisig) : string[] | null {
   return ((multisigAddressType(multisig) === P2SH) ? multisigRedeemScript(multisig) : multisigWitnessScript(multisig)).pubkeys.map(toHexString);
 }
 
@@ -379,7 +389,7 @@ export function multisigPublicKeys(multisig) {
  * console.log(multisigAddress(multisig)); // "3j..."
  *
  */
-export function multisigAddress(multisig) {
+export function multisigAddress(multisig: Multisig) : string {
   return multisig.address;
 }
 
@@ -401,6 +411,6 @@ export function multisigAddress(multisig) {
  * const multisig = braid.deriveMultisigByPath("0/0");
  * console.log(multisigBraidDetails(multisig)); // {network: mainnet, addressType: p2sh, extendedPublicKeys: {...}, requiredSigners: 2}}
  */
-export function multisigBraidDetails(multisig) {
+export function multisigBraidDetails(multisig: Multisig) : string | null {
   return multisig.braidDetails ? multisig.braidDetails : null;
 }

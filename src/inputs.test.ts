@@ -4,6 +4,7 @@ import {
   validateMultisigInput,
   validateTransactionID,
   validateTransactionIndex,
+  MultisigTransactionInput,
 } from './inputs';
 
 const VALID_TXID = "65e7ef764030dabfb46e3ae1c357b0666d0dda722c9809fb73245d6d68665284";
@@ -13,24 +14,29 @@ describe("inputs", () => {
   describe("sortInputs", () => {
 
     it("sorts inputs in ascending lexicographic order by txid and index", () => {
-      const unsortedInputs = [
+      const unsortedInputs: MultisigTransactionInput[] = [
         {
+          multisig: false,
           txid: "def123",
           index: 0,
         },
         {
+          multisig: false,
           txid: "0123",
           index: 2,
         },
         {
+          multisig: false,
           txid: "abc123",
           index: 1,
         },
         {
+          multisig: false,
           txid: "abc123",
           index: 0,
         },
         {
+          multisig: false,
           txid: "abc123",
           index: 2,
         },
@@ -53,42 +59,46 @@ describe("inputs", () => {
   describe("validateMultisigInputs", () => {
 
     it("should return an error message with no inputs", () => {
+      const input: MultisigTransactionInput[] = [];
       expect(
         validateMultisigInputs(
-          [],
+          input,
         ),
       ).toMatch(/At least one input.+required/i);
     });
 
     it("should return an error message if one of the inputs is invalid", () => {
+      const input: MultisigTransactionInput[] = [
+        {txid: VALID_TXID, index: 0, multisig: false},
+        {txid: VALID_TXID, index: 1, multisig: true},
+      ];
       expect(
         validateMultisigInputs(
-          [
-            {txid: VALID_TXID, index: 0},
-            {txid: VALID_TXID, index: 1, multisig: true},
-          ],
+          input,
         ),
       ).toMatch(/not have a multisig.+property/i);
     });
 
     it("should return an error message the UTXOs are duplicative", () => {
+      const input: MultisigTransactionInput[] = [
+        {txid: VALID_TXID, index: 0, multisig: true},
+        {txid: VALID_TXID, index: 0, multisig: true},
+      ];
       expect(
         validateMultisigInputs(
-          [
-            {txid: VALID_TXID, index: 0, multisig: true},
-            {txid: VALID_TXID, index: 0, multisig: true},
-          ],
+          input,
         ),
       ).toMatch(/duplicate input/i);
     });
 
     it("should return an empty string if all inputs are valid", () => {
+      const input: MultisigTransactionInput[] = [
+        {txid: VALID_TXID, index: 0, multisig: true},
+        {txid: VALID_TXID, index: 1, multisig: true},
+      ];
       expect(
         validateMultisigInputs(
-          [
-            {txid: VALID_TXID, index: 0, multisig: true},
-            {txid: VALID_TXID, index: 1, multisig: true},
-          ],
+          input,
         ),
       ).toEqual("");
     });
@@ -97,24 +107,12 @@ describe("inputs", () => {
 
   describe("validateMultisigInput", () => {
 
-    it("should return an error message for a missing txid", () => {
-      expect(validateMultisigInput({index: 0, multisig: true})).toMatch(/does not have.+txid/i);
-    });
-
     it("should return an error message for an invalid txid", () => {
       expect(validateMultisigInput({index: 0, multisig: true, txid: "hi there"})).toMatch(/txid is invalid/i);
     });
 
-    it("should return an error message for a missing index", () => {
-      expect(validateMultisigInput({txid: VALID_TXID, multisig: true})).toMatch(/does not have.+index/i);
-    });
-
     it("should return an error message for an invalid index", () => {
       expect(validateMultisigInput({txid: VALID_TXID, index: -1, multisig: true})).toMatch(/index cannot be negative/i);
-    });
-
-    it("should return an error message for a missing multisig", () => {
-      expect(validateMultisigInput({txid: VALID_TXID, index: 0})).toMatch(/does not have.+multisig/i);
     });
 
   });

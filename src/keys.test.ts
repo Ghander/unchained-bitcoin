@@ -505,7 +505,7 @@ describe("keys", () => {
           rootFingerprint,
           depth,
           index
-        } = NODES[path || paths[0]]; // test with a null path but need to pull a real node
+        } = NODES[String(path) || String(paths[0])]; // test with a null path but need to pull a real node
 
         const extendedPubkey = new ExtendedPublicKey({
           path,

@@ -30,7 +30,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`can generate an ${test.network} 2-of-2 ${test.type} address from public keys`, () => {
-        const multisig = generateMultisigFromPublicKeys(test.network, test.type, 2, ...test.publicKeys);
+        const multisig = generateMultisigFromPublicKeys(test.network, test.type, 2, ...test.publicKeys) || {};
         expect(multisigAddressType(multisig)).toEqual(test.type);
         expect(multisigRequiredSigners(multisig)).toEqual(2);
         expect(multisigTotalSigners(multisig)).toEqual(2);
@@ -46,7 +46,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`can generate an ${test.network} 2-of-2 ${test.type} address from public keys`, () => {
-        const multisig = generateMultisigFromHex(test.network, test.type, test.type === P2SH ? test.redeemScriptHex : test.witnessScriptHex);
+        const multisig = generateMultisigFromHex(test.network, test.type, test.type === P2SH ? test.redeemScriptHex : test.witnessScriptHex) || {};
         expect(multisigAddressType(multisig)).toEqual(test.type);
         expect(multisigRequiredSigners(multisig)).toEqual(2);
         expect(multisigTotalSigners(multisig)).toEqual(2);
@@ -62,7 +62,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns the address type for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(multisigAddressType(test.multisig)).toEqual(test.type);
+        expect(multisigAddressType(test.multisig || {})).toEqual(test.type);
       });
     });
 
@@ -72,7 +72,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns 2 for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(multisigRequiredSigners(test.multisig)).toEqual(2);
+        expect(multisigRequiredSigners(test.multisig || {})).toEqual(2);
       });
     });
 
@@ -82,7 +82,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns 2 for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(multisigTotalSigners(test.multisig)).toEqual(2);
+        expect(multisigTotalSigners(test.multisig || {})).toEqual(2);
       });
     });
 
@@ -92,7 +92,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns the multisig script for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(scriptToHex(multisigScript(test.multisig))).toEqual(test.multisigScriptHex);
+        expect(scriptToHex(multisigScript(test.multisig || {}))).toEqual(test.multisigScriptHex);
       });
     });
 
@@ -103,11 +103,11 @@ describe("multisig", () => {
     MULTISIGS.forEach((test) => {
       if (test.type === P2WSH) {
         it(`returns null for a ${test.network} 2-of-2 ${test.type} address`, () => {
-          expect(multisigRedeemScript(test.multisig)).toBeNull();
+          expect(multisigRedeemScript(test.multisig || {})).toBeNull();
         });
       } else {
         it(`returns the redeem script for a ${test.network} 2-of-2 ${test.type} address`, () => {
-          expect(scriptToHex(multisigRedeemScript(test.multisig))).toEqual(test.redeemScriptHex);
+          expect(scriptToHex(multisigRedeemScript(test.multisig || {}))).toEqual(test.redeemScriptHex);
         });
       }
     });
@@ -119,11 +119,11 @@ describe("multisig", () => {
     MULTISIGS.forEach((test) => {
       if (test.type === P2SH) {
         it(`returns null for a ${test.network} 2-of-2 ${test.type} address`, () => {
-          expect(multisigWitnessScript(test.multisig)).toBeNull();
+          expect(multisigWitnessScript(test.multisig || {})).toBeNull();
         });
       } else {
         it(`returns the witness script for a ${test.network} 2-of-2 ${test.type} address`, () => {
-          expect(scriptToHex(multisigWitnessScript(test.multisig))).toEqual(test.witnessScriptHex);
+          expect(scriptToHex(multisigWitnessScript(test.multisig || {}))).toEqual(test.witnessScriptHex);
         });
       }
     });
@@ -135,7 +135,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns the public keys for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(multisigPublicKeys(test.multisig)).toEqual(test.publicKeys);
+        expect(multisigPublicKeys(test.multisig || {})).toEqual(test.publicKeys);
       });
     });
 
@@ -145,7 +145,7 @@ describe("multisig", () => {
 
     MULTISIGS.forEach((test) => {
       it(`returns the address for a ${test.network} 2-of-2 ${test.type} address`, () => {
-        expect(multisigAddress(test.multisig)).toEqual(test.address);
+        expect(multisigAddress(test.multisig || {})).toEqual(test.address);
       });
     });
 

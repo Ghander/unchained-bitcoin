@@ -5,6 +5,8 @@
  * @module p2sh_p2wsh
  */
 
+import { FeeOptions } from ".";
+
 /**
  * Address type constant for "pay-to-script-hash" wrapped
  * "pay-to-witness-script-hash" (P2SH-P2WSH) addresses.
@@ -21,14 +23,14 @@ export const P2SH_P2WSH = "P2SH-P2WSH";
  * Estimate the transaction virtual size (vsize) when spending inputs
  * from the same multisig P2SH-P2WSH address.
  *
- * @param {Object} config - configuration for the calculation
+ * @param {FeeOptions} config - configuration for the calculation
  * @param {number} config.numInputs - number of m-of-n multisig P2SH inputs
  * @param {number} config.numOutputs - number of outputs
  * @param {number} config.m - required signers
  * @param {number} config.n - total signers
  * @returns {number} estimated transaction virtual size in bytes
  */
-export function estimateMultisigP2SH_P2WSHTransactionVSize(config) {
+export function estimateMultisigP2SH_P2WSHTransactionVSize(config: FeeOptions) {
   const baseSize = 76 * config.numInputs + 34 * config.numOutputs + 30;
   const signatureLength = 72;
   const overhead = 6;

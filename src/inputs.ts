@@ -22,13 +22,19 @@ import {multisigBraidDetails} from './multisig';
  * 
  */
 
+export interface MultisigTransactionInput {
+  multisig: boolean;
+  txid: string;
+  index: number;
+}
+
 /**
  * Sorts the given inputs according to the [BIP69 standard]{@link https://github.com/bitcoin/bips/blob/master/bip-0069.mediawiki#transaction-inputs}: ascending lexicographic order.
  * 
  * @param {module:inputs.MultisigTransactionInput[]} inputs - inputs to sort
  * @returns {module:inputs.MultisigTransactionInput[]} inputs sorted according to BIP69
  */
-export function sortInputs(inputs) {
+export function sortInputs(inputs: MultisigTransactionInput[] ) {
   return inputs.sort((input1, input2) => {
     if (input1.txid > input2.txid) { 
       return 1; 
@@ -55,9 +61,9 @@ export function sortInputs(inputs) {
  * @param {boolean} [braidRequired] - inputs need to have braid details attached to them
  * @returns {string} empty if valid or corresponding validation message if not
  */
-export function validateMultisigInputs(inputs, braidRequired) {
+export function validateMultisigInputs(inputs: MultisigTransactionInput[], braidRequired: boolean = false): string {
   if (!inputs || inputs.length === 0) { return "At least one input is required."; }
-  let utxoIDs = [];
+  let utxoIDs = new Array();
   for (let inputIndex = 0; inputIndex < inputs.length; inputIndex++) {
     const input = inputs[inputIndex];
     if (braidRequired && input.multisig && !multisigBraidDetails(input.multisig)) {
@@ -87,7 +93,7 @@ export function validateMultisigInputs(inputs, braidRequired) {
  * @returns {string} empty if valid or corresponding validation message if not
  * 
  */
-export function validateMultisigInput(input) {
+export function validateMultisigInput(input: MultisigTransactionInput): string {
   if (!input.txid) {
     return `Does not have a transaction ID ('txid') property.`;
   }
@@ -113,7 +119,7 @@ const TXID_LENGTH = 64;
  * @returns {string} empty if valid or corresponding validation message if not
  * 
  */
-export function validateTransactionID(txid) {
+export function validateTransactionID(txid: string): string {
   if (txid === null || txid === undefined || txid === '') {
     return "TXID cannot be blank.";
   }
@@ -134,11 +140,11 @@ export function validateTransactionID(txid) {
  * @returns {string} empty if valid or corresponding validation message if not
  * 
  */
-export function validateTransactionIndex(indexString) {
+export function validateTransactionIndex(indexString: string | number): string {
   if (indexString === null || indexString === undefined || indexString === '') {
     return "Index cannot be blank.";
   }
-  const index = parseInt(indexString, 10);
+  const index = typeof indexString === 'string' ?  parseInt(indexString, 10) : indexString;
   if (!isFinite(index)) {
     return "Index is invalid";
   }

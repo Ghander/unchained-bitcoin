@@ -103,7 +103,7 @@ function getBip32Derivation(multisig, index= 0) {
     return multisig.bip32Derivation;
   }
   // Otherwise generate it
-  const config = JSON.parse(multisigBraidDetails(multisig));
+  const config = JSON.parse(multisigBraidDetails(multisig) || '');
   const braid = generateBraid(
     config.network,
     config.addressType,

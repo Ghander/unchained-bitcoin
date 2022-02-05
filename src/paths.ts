@@ -5,7 +5,8 @@
  * @module paths
  */
 
-import {MAINNET} from "./networks";
+import { MULTISIG_ADDRESS_TYPES } from ".";
+import {NETWORKS} from "./networks";
 import {P2SH} from "./p2sh";
 import {P2SH_P2WSH} from "./p2sh_p2wsh";
 import {P2WSH} from "./p2wsh";
@@ -30,7 +31,7 @@ const MAX_BIP32_NODE_INDEX = Math.pow(2, 32) - 1;
  * import {hardenedBIP32Index} from "unchained-bitcoin";
  * console.log(hardenedBIP32Index(44); // 2147483692
  */
-export function hardenedBIP32Index(index) {
+export function hardenedBIP32Index(index: string) : number {
   return parseInt(index, 10) + HARDENING_OFFSET;
 }
 
@@ -46,7 +47,7 @@ export function hardenedBIP32Index(index) {
  * import {bip32PathToSequence} from "unchained-bitcoin";
  * console.log(bip32PathToSequence("m/45'/1/99")); // [2147483693, 1, 99]
  */
-export function bip32PathToSequence(pathString) {
+export function bip32PathToSequence(pathString: string) : number[] {
   const pathSegments = pathString.split("/").splice(1);
   return pathSegments.map(pathSegment => {
     if (pathSegment.substr(-1) === "'") {
@@ -69,7 +70,7 @@ export function bip32PathToSequence(pathString) {
  * import {bip32SequenceToPath} from "unchained-bitcoin";
  * console.log(bip32SequenceToPath([2147483693, 1, 99])); // m/45'/1/99
  */
-export function bip32SequenceToPath(sequence) {
+export function bip32SequenceToPath(sequence: number[]): string {
   return "m/" + sequence.map((index) => {
     if (index >= HARDENING_OFFSET) {
       return `${(index - HARDENING_OFFSET)}'`;
@@ -109,7 +110,7 @@ export function bip32SequenceToPath(sequence) {
  * console.log(validateBIP32Path("/0'/0", {mode: "unhardened")); // "BIP32 path cannot include hardened segments."
  * console.log(validateBIP32Path("/0/0", {mode: "unhardened")); // ""
  */
-export function validateBIP32Path(pathString, options) {
+export function validateBIP32Path(pathString: string, options?): string {
   if (pathString === null || pathString === undefined || pathString === '') {
     return "BIP32 path cannot be blank.";
   }
@@ -135,7 +136,7 @@ export function validateBIP32Path(pathString, options) {
   return validateBIP32PathSegments(segmentStrings.slice(1));
 }
 
-function validateBIP32PathSegments(segmentStrings) {
+function validateBIP32PathSegments(segmentStrings: string[]) {
   for (let i = 0; i < segmentStrings.length; i++) {
     const indexString = segmentStrings[i];
     const error = validateBIP32Index(indexString);
@@ -184,7 +185,7 @@ function validateBIP32PathSegments(segmentStrings) {
  * console.log(validateBIP32Index("2147483647")); // ""
  * console.log(validateBIP32Index("2147483647'")); // ""
  */
-export function validateBIP32Index(indexString, options) {
+export function validateBIP32Index(indexString: string, options?: any ): string {
   if (indexString === null || indexString === undefined || indexString === '') {
     return "BIP32 index cannot be blank.";
   }
@@ -230,7 +231,6 @@ export function validateBIP32Index(indexString, options) {
     }
   }
 
-
   return '';
 }
 
@@ -249,14 +249,14 @@ export function validateBIP32Index(indexString, options) {
  *
  * @param {module:multisig.MULTISIG_ADDRESS_TYPES} addressType - address type
  * @param {module:networks.NETWORKS} network - bitcoin network
- * @returns {string} derivation path
+ * @returns {string|null} derivation path
  * @example
  * import {multisigBIP32Root} from "unchained-bitcoin";
  * console.log(multisigBIP32Root(P2SH, MAINNET)); // m/45'/0'/0'
  * console.log(multisigBIP32Root(P2SH_P2WSH, TESTNET); // m/48'/1'/0'/1'
  */
-export function multisigBIP32Root(addressType, network) {
-  const coinPath = (network === MAINNET ? "0'" : "1'");
+export function multisigBIP32Root(addressType: MULTISIG_ADDRESS_TYPES, network: NETWORKS): string | null {
+  const coinPath = (network === NETWORKS.MAINNET ? "0'" : "1'");
   switch (addressType) {
     case P2SH:
       return `m/45'/${coinPath}/0'`;
@@ -282,7 +282,7 @@ export function multisigBIP32Root(addressType, network) {
  * console.log(multisigBIP32Path(P2SH, MAINNET, 0); // m/45'/0'/0'/0
  * console.log(multisigBIP32Path(P2SH_P2WSH, TESTNET, "3'/4"); // m/48'/1'/0'/1'/3'/4"
  */
-export function multisigBIP32Path(addressType, network, relativePath) {
+export function multisigBIP32Path(addressType: MULTISIG_ADDRESS_TYPES, network: NETWORKS, relativePath?: string | number): string | null {
   const root = multisigBIP32Root(addressType, network);
   if (root) {
     return root + `/${relativePath || "0"}`;
@@ -298,7 +298,7 @@ export function multisigBIP32Path(addressType, network, relativePath) {
  * import {getParentBIP32Path} from "unchained-bitcoin";
  * console.log(getParentBIP32Path("m/45'/0'/0'/0"); // m/45'/0'/0'
  */
-export function getParentBIP32Path(bip32Path) {
+export function getParentBIP32Path(bip32Path: string): string {
   // first validate the input
   let validated = validateBIP32Path(bip32Path);
   if (validated.length) return validated;
@@ -315,7 +315,7 @@ export function getParentBIP32Path(bip32Path) {
  * import {getRelativeBIP32Path} from "unchained-bitcoin";
  * console.log(getRelativeBIP32Path("m/45'/0'/0'", "m/45'/0'/0'/0/1/2"); // 0/1/2
  */
-export function getRelativeBIP32Path(parentBIP32Path, childBIP32Path) {
+export function getRelativeBIP32Path(parentBIP32Path: string, childBIP32Path: string): string {
   if (parentBIP32Path === childBIP32Path) return '';
   // first validate the parentBIP32Path
   let validatedParent = validateBIP32Path(parentBIP32Path);
